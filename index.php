@@ -24,7 +24,7 @@ class PayingAttention
         wp_register_script('ournewblocktype', plugin_dir_url(__FILE__) . 'build/index.js', array('wp-blocks', 'wp-element', 'wp-editor'));
         register_block_type('ourplugin/paying-attention', array(
             'editor_script' => 'ournewblocktype',
-            'style' => 'quizeditcss',
+            'editor_style' => 'quizeditcss',
             'render_callback' => array($this, 'theHTML')
         ));
     }
@@ -32,10 +32,15 @@ class PayingAttention
     // Save: function
     function theHTML($attributes)
     {
-        ob_start() ?>
-        <div class="paying-attention-edit-block">
 
-            <h3>Today the sky is <?php echo esc_html($attributes['skyColor']) ?> and the grass is <?php echo esc_html($attributes['grassColor']) ?>!</h3>
+        if (!is_admin()) {
+            wp_enqueue_script('attentionFrontend', plugin_dir_url(__FILE__) . 'build/frontend.js', array('wp-element'));
+            wp_enqueue_style('attentionFrontendStyles', plugin_dir_url(__FILE__) . 'build/frontend.css');
+        }
+
+        ob_start() ?>
+        <div class="paying-attention-update-me">
+            <pre style="display:none"><?php echo wp_json_encode($attributes) ?></pre>
         </div>
 
 <?php return ob_get_clean();

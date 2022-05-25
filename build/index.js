@@ -117,10 +117,40 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+(function () {
+  let locked = false;
+  wp.data.subscribe(function () {
+    const results = wp.data.select('core/block-editor').getBlocks().filter(function (block) {
+      return block.name == 'ourplugin/paying-attention' && block.attributes.correctAnswer == undefined;
+    });
+
+    if (results.length && locked == false) {
+      locked = true;
+      wp.data.dispatch('core/editor').lockPostSaving('noanswer');
+    }
+
+    if (!results.length && locked) {
+      locked = false;
+      wp.data.dispatch('core/editor').unlockPostSaving('noanswer');
+    }
+  });
+})();
+
 wp.blocks.registerBlockType('ourplugin/paying-attention', {
   title: 'Are you Paying Attention',
   icon: {
-    src: 'yes-alt',
+    src: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("svg", {
+      xmlns: "http://www.w3.org/2000/svg",
+      width: "16",
+      height: "16",
+      fill: "currentColor",
+      class: "bi bi-question-lg",
+      viewBox: "0 0 16 16"
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("path", {
+      "fill-rule": "evenodd",
+      d: "M4.475 5.458c-.284 0-.514-.237-.47-.517C4.28 3.24 5.576 2 7.825 2c2.25 0 3.767 1.36 3.767 3.215 0 1.344-.665 2.288-1.79 2.973-1.1.659-1.414 1.118-1.414 2.01v.03a.5.5 0 0 1-.5.5h-.77a.5.5 0 0 1-.5-.495l-.003-.2c-.043-1.221.477-2.001 1.645-2.712 1.03-.632 1.397-1.135 1.397-2.028 0-.979-.758-1.698-1.926-1.698-1.009 0-1.71.529-1.938 1.402-.066.254-.278.461-.54.461h-.777ZM7.496 14c.622 0 1.095-.474 1.095-1.09 0-.618-.473-1.092-1.095-1.092-.606 0-1.087.474-1.087 1.091S6.89 14 7.496 14Z"
+    })),
     background: '#f03',
     foreground: '#fff'
   },
@@ -131,7 +161,11 @@ wp.blocks.registerBlockType('ourplugin/paying-attention', {
     },
     answers: {
       type: 'array',
-      default: ['red', 'blue']
+      default: ['']
+    },
+    correctAnswer: {
+      type: 'number',
+      default: undefined
     }
   },
   edit: EditComponent,
@@ -153,6 +187,18 @@ function EditComponent(props) {
     });
     props.setAttributes({
       answers: newAnswers
+    });
+
+    if (indexToDelete == props.attributes.correctAnswer) {
+      props.setAttributes({
+        correctAnswer: undefined
+      });
+    }
+  }
+
+  function markAsCorrect(index) {
+    props.setAttributes({
+      correctAnswer: index
     });
   }
 
@@ -180,15 +226,18 @@ function EditComponent(props) {
           answers: newAnswers
         });
       }
-    })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.FlexItem, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Icon, {
+    })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.FlexItem, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
+      onClick: () => markAsCorrect(index)
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Icon, {
       className: "mark-as-correct",
-      icon: "star-empty"
+      icon: props.attributes.correctAnswer == index ? 'star-filled' : 'star-empty'
     }))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.FlexItem, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
       isLink: true,
       className: "attention-delete",
       onClick: () => deleteAnswer(index)
     }, "Delete")));
   }), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_components__WEBPACK_IMPORTED_MODULE_2__.Button, {
+    icon: "plus",
     isPrimary: true,
     onClick: () => {
       props.setAttributes({
