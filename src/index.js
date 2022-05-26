@@ -1,5 +1,7 @@
 import "./index.scss"
-import {TextControl, Flex, FlexBlock, FlexItem, Button, Icon} from '@wordpress/components'
+import {TextControl, Flex, FlexBlock, FlexItem, Button, Icon, PanelBody, PanelRow, ColorPicker} from '@wordpress/components'
+import {InspectorControls, BlockControls, AlignmentToolbar, useBlockProps} from '@wordpress/block-editor'
+import {ChromePicker} from 'react-color'
 
 
 (function (){
@@ -33,7 +35,19 @@ wp.blocks.registerBlockType('ourplugin/paying-attention', {
     attributes:{
         question: {type:'string'},
         answers: {type: 'array', default: ['']},
-        correctAnswer:{type:'number', default:undefined}
+        correctAnswer:{type:'number', default:undefined},
+        bgColor:{type:'string', default:'#EBEBEB'},
+        theAlignment:{type:'string', default:'left'}
+    },
+    description:'Give your audience a chance to prove their comprehension.',
+    example:{
+        attributes:{
+            question: 'What is my name?',
+            correctAnswer: 3,
+            answers:['Andres', 'Carlos', 'Pedro'],
+            theAlignment:'center',
+            bgColor:'#6CAFB9'
+        }
     },
     edit: EditComponent,
 
@@ -44,6 +58,10 @@ wp.blocks.registerBlockType('ourplugin/paying-attention', {
 
 // Edit: function
 function EditComponent(props){
+
+    const blockProps = useBlockProps({
+        className:'paying-attention-edit-block', style: {backgroundColor:props.attributes.bgColor}
+    })
 
     function updateQuestion(value){
         props.setAttributes({question:value})
@@ -61,8 +79,21 @@ function EditComponent(props){
     function markAsCorrect(index){
         props.setAttributes({correctAnswer:index})
     }
+
     return (
-        <div className='paying-attention-edit-block'>
+        <div {...blockProps} >
+            <BlockControls>
+                <AlignmentToolbar value={props.attributes.theAlignment} onChange={x => props.setAttributes({theAlignment:x})} />
+            </BlockControls>
+
+            <InspectorControls>
+                <PanelBody title="Backgorund Color" initialOpen={true}>
+                <PanelRow>
+                    <ChromePicker color={props.attributes.bgColor} onChangeComplete={x => props.setAttributes({bgColor: x.hex})} desableAlpha={true}/>
+                </PanelRow>
+                </PanelBody>
+            </InspectorControls>
+
             <TextControl label='Question: ' value={props.attributes.question} onChange={updateQuestion} style={{fontSize:"20px"}}/>
             <p style={{fontSize: "13px", margin: "20px 0 8px 0"}}>Answers:</p>
             {props.attributes.answers.map(function(answer, index){

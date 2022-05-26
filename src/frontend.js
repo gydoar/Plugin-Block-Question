@@ -2,7 +2,9 @@ import React, {useState, useEffect} from 'react'
 import ReactDOM from 'react-dom'
 import './frontend.scss'
 
-const divsToUpdate = document.querySelectorAll('.paying-attention-update-me')
+document.addEventListener('DOMContentLoaded', function(){
+    
+    const divsToUpdate = document.querySelectorAll('.paying-attention-update-me')
 
 divsToUpdate.forEach(function(div){
     const data = JSON.parse(div.querySelector('pre').innerHTML)
@@ -35,7 +37,7 @@ function Quiz(props){
     }
 
     return (
-        <div className='paying-attention-frontend'>
+        <div className='paying-attention-frontend' style={{backgroundColor:props.bgColor, textAlign:props.theAlignment}}>
             <p>{props.question}</p>
             <ul>
                 {props.answers.map(function(answer, index){
@@ -74,3 +76,4 @@ function Quiz(props){
         </div>
     )
 }
+})
